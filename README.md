@@ -189,7 +189,7 @@ python create_data.py --variant no_labels --dataset {dataset}
 Then, run the commands same as [default commands](#no-demonstrations) but add `--use_demonstrations --k 16 --seed 100,13,21,42,87 --dataset {dataset}_no_labels`.
 
 
-[paper]: https://arxiv.org/abs/TODO
+[paper]: https://arxiv.org/abs/2202.12837
 [sewon]: http://shmsw25.github.io/
 [ari]: https://ari-holtzman.github.io/
 [mikel]: https://scholar.google.com/citations?user=N5InzP8AAAAJ&hl=en
