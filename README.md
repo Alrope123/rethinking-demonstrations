@@ -1,6 +1,6 @@
 # Rethinking the Role of Demonstrations: What Makes In-Context Learning Work?
 
-This includes an original implementation of "[Rethinking the Role of Demonstrations: What Makes In-Context Learning Work?][paper]" by [Sewon Min][sewon], Xinxi Lyu, [Ari Holtzman][ari], [Mikel Artetxe][mikel], [Mike Lewis][mike], [Hannaneh Hajishirzi][hanna], and [Luke Zettlemoyer][luke].
+This includes an original implementation of "[Rethinking the Role of Demonstrations: What Makes In-Context Learning Work?][paper]" by [Sewon Min][sewon], [Xinxi Lyu][xinxi], [Ari Holtzman][ari], [Mikel Artetxe][mikel], [Mike Lewis][mike], [Hannaneh Hajishirzi][hanna], and [Luke Zettlemoyer][luke].
 
 This code provides:
 - Codes for creating the variants of the demonstrations used in the experiments.
@@ -130,6 +130,10 @@ python create_data.py --variant {75|50|25|0}_correct --dataset {dataset}
 Then, run the commands same as [default commands](#no-demonstrations) but add `--use_demonstrations --k 16 --seed 100,13,21,42,87 --dataset {dataset}_{75|50|25|0}_correct`.
 
 #### Number of input-label pairs in the demonstrations
+Preprocess the data with varying `k` via:
+```bash
+python _build_gym.py --build --n_proc=40 --do_test --test_k {4|8|16|32}
+```
 
 Create the demonstrations with varying `k` via:
 ```bash
@@ -191,6 +195,7 @@ Then, run the commands same as [default commands](#no-demonstrations) but add `-
 
 [paper]: https://arxiv.org/abs/TODO
 [sewon]: http://shmsw25.github.io/
+[xinxi]: https://alrope123.github.io/
 [ari]: https://ari-holtzman.github.io/
 [mikel]: https://scholar.google.com/citations?user=N5InzP8AAAAJ&hl=en
 [mike]: https://ai.facebook.com/people/mike-lewis/
