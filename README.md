@@ -50,12 +50,21 @@ git pull metaicl main
 ```
 
 Install the data dependencies and download the data.
-```
+```bash
 conda conda create --name metaicl-data python=3.8
 conda activate metaicl-data
 pip install datasets==1.4.0 wget
 cd preprocess
 python _build_gym.py --build --n_proc=40 --do_test
+```
+
+This uses `k=16` by default. If you want to run ablations with varying `k`, please also run the following.
+```bash
+python _build_gym.py --build --n_proc=40 --do_test --test_k {4|8|32}
+```
+
+After preprocesisng is done, come back to the main directory.
+```bash
 cd ../
 conda deactivate
 ```
@@ -130,10 +139,8 @@ python create_data.py --variant {75|50|25|0}_correct --dataset {dataset}
 Then, run the commands same as [default commands](#no-demonstrations) but add `--use_demonstrations --k 16 --seed 100,13,21,42,87 --dataset {dataset}_{75|50|25|0}_correct`.
 
 #### Number of input-label pairs in the demonstrations
-Preprocess the data with varying `k` via:
-```bash
-python _build_gym.py --build --n_proc=40 --do_test --test_k {4|8|16|32}
-```
+
+(Note that you should have run preprocessing with varying `k` to run this ablation. If you have not done this, please re-visit the [Preparation](#preparation) section.)
 
 Create the demonstrations with varying `k` via:
 ```bash
