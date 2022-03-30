@@ -13,7 +13,8 @@ def main(args):
         "gold", "random", # main experiments in Section 4
         "75_correct", "50_correct", "25_correct", "0_correct", # ablations in Section 4
         "gold_w_template", "random_w_template", # ablations in Section 4
-        "ood_inputs", "random_english_words", "random_labels_only", "no_labels" # Section 5
+        "ood_inputs", "random_english_words", "random_labels_only", "no_labels", # Section 5
+        "permutated_labels"
     ]
     if args.variant in ["gold_w_template", "random_w_template"]:
         assert args.method is not None, "Please specify `--method` with the inference method (`direct` or `channel`) for using the template."
@@ -125,6 +126,11 @@ def main(args):
                         train_data[i]["output"] = new_mapping[dp["output"]]
                         train_data[i]["options"] = [new_mapping[option] for option in dp["options"]]
 
+                    # also modify the test data for classification tasks
+                    for i, dp in enumerate(test_data):
+                        test_data[i]["output"] = new_mapping[dp["output"]]
+                        test_data[i]["options"] = [new_mapping[option] for option in dp["options"]]
+
                 elif config["task_type"]=="multi-choice":
                     with open(os.path.join(config_file, "{}.json".format(new_dataset)), "w") as f:
                         json.dump(config, f)
@@ -141,6 +147,18 @@ def main(args):
                 else:
                     raise NotImplementedError()
 
+            # modify both train input and test input for permutated_labels with classification tasks
+            if args.variant == "permutated_labels" and config["task_type"]=="classification":
+                old_options = config["options"]
+                new_options = [old_options[(i+1)%len(old_options)] for i in range(len(old_options))]
+                new_mapping = {old_option: new_option for old_option, new_option in zip(old_options, new_options)}
+
+                for i, dp in enumerate(train_data):
+                    train_data[i]["output"] = new_mapping[dp["output"]]                    
+                for i, dp in enumerate(test_data):
+                    test_data[i]["output"] = new_mapping[dp["output"]]
+                    
+
             ## modify labels in the training data
 
             if args.variant in ["75_correct", "50_correct", "25_correct"]:
@@ -148,7 +166,7 @@ def main(args):
                 indices_correct = np.random.permutation(range(args.k))[:num_correct]
 
             for dp_idx, dp in enumerate(train_data):
-                if args.variant in ["gold", "gold_w_template"] or \
+                if args.variant in ["gold", "gold_w_template", "permutated_labels"] or \
                         (args.variant in ["75_correct", "50_correct", "25_correct"] and dp_idx in indices_correct):
                     # assign correct label
                     pass
