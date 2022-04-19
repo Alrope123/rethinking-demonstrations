@@ -4,7 +4,7 @@ import random
 import json
 import numpy as np
 
-from collections import defaultdict
+from collections import defaultdict, Counter
 
 from templates import apply_template
 
@@ -14,7 +14,7 @@ def main(args):
         "75_correct", "50_correct", "25_correct", "0_correct", # ablations in Section 4
         "gold_w_template", "random_w_template", # ablations in Section 4
         "ood_inputs", "random_english_words", "random_labels_only", "no_labels", # Section 5
-        "permutated_labels"
+        "permutated_labels", "random_true_distribution"
     ]
     if args.variant in ["gold_w_template", "random_w_template"]:
         assert args.method is not None, "Please specify `--method` with the inference method (`direct` or `channel`) for using the template."
@@ -70,6 +70,19 @@ def main(args):
             new_dataset_dir = os.path.join(args.data_dir, new_dataset)
             if not os.path.exists(new_dataset_dir):
                 os.mkdir(new_dataset_dir)
+        
+        # load full training data to get the distribution of the labels
+        if args.variant=="random_true_distribution":
+            full_train_data_path = os.path.join(args.data_dir, dataset, "{}_16384_100_train.jsonl".format(dataset))
+            assert os.path.exists(full_train_data_path), "Please generate full training data first by running _build_gym.py with k=16384."
+            full_train_data_labels = []
+            with open(full_train_data_path, "r") as f:
+                for line in f:
+                    dp = json.loads(line)
+                    assert dp["task"]==dataset
+                    full_train_data_labels.append(dp["output"])
+            train_label_counter = Counter(full_train_data_labels)
+            train_label_distribution = {label : train_label_counter[label] / len(full_train_data_labels) for label in train_label_counter}
 
         for seed in seeds:
             # random seed
@@ -177,9 +190,12 @@ def main(args):
                     # assign empty label
                     dp["output"] = ""
                     dp["options"] = [""]
+                elif args.variant=="random_true_distribution":
+                    # assign random labels according to the distribution in the training data
+                    dp["output"] = np.random.choice(list(train_label_distribution.keys()), p=list(train_label_distribution.values()))
                 else:
                     # assign random label
-                    dp["output"] = dp["options"][np.random.choice(range(len(dp["options"])))]
+                    dp["output"] = np.random.choice(dp["options"])
 
             ## modify inputs in the training data
 
