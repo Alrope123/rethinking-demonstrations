@@ -37,7 +37,7 @@ If you find our code or paper useful, please cite the paper:
     * [Demonstrations with random english words](#demonstrations-with-random-english-words)
     * [Demonstrations with random labels only (no inputs)](#demonstrations-with-random-labels-only-no-inputs)
     * [Demonstrations with no labels (inputs only)](#demonstrations-with-no-labels-inputs-only)
-
+5. [Running with GPT-3](#running-with-gpt-3)
 
 ## Preparation
 
@@ -204,3 +204,13 @@ Then, run the commands same as [default commands](#no-demonstrations) but add `-
 
 [metaicl]: https://github.com/facebookresearch/MetaICL
 
+## Running with GPT-3
+Default command to run the evaluation with GPT-3:
+```bash
+python test_gpt3.py --dataset {dataset} --gpt3 {ada|babbage|curie|davinci} --method {direct|channel} --out_dir out/gpt3 --do_zeroshot --api {API key}
+```
+Some useful notes:
+* You can create/check your OpenAI API keys by visiting [this link](https://beta.openai.com/account/api-keys).
+* All the addtional flags in the previous sections are still applicable to this new default command, allowing you to reproduce the same set of experiments with GPT-3.
+* The responses from GPT-3 API are saved and can be found in the `out_dir`.
+* Running with GPT-3 can be expensive, and different models of GPT-3 comes with different costs. Please check [this link](https://openai.com/api/pricing/) to evaluate the cost before running each experiment.

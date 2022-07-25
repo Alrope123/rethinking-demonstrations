@@ -82,7 +82,7 @@ class GPT3Model(object):
             response = self.gpt3(data)
             for choice in response["choices"]:
                 cost += len(choice["logprobs"]["tokens"]) * 0.00006
-            print("current cost = " + str(cost))
+            # print("current cost = " + str(cost))
             cache.append((data, response))
             # get the beginning of the target from the response (based on tokenization)
             for inp, outp, out in zip(inputs, outputs, response["choices"]):
