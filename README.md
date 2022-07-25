@@ -19,6 +19,7 @@ If you find our code or paper useful, please cite the paper:
 ```
 
 ### Announcements
+* 07/25/2022: The code also supports running GPT3 now. Please contact authors for running other models.
 * 02/25/2022: The code supports running GPT-2, MetaICL and GPT-J for now. Please contact authors for running other models.
 
 ## Content
