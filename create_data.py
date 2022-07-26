@@ -4,7 +4,7 @@ import random
 import json
 import numpy as np
 
-from collections import defaultdict
+from collections import defaultdict, Counter
 
 from templates import apply_template
 
@@ -13,7 +13,8 @@ def main(args):
         "gold", "random", # main experiments in Section 4
         "75_correct", "50_correct", "25_correct", "0_correct", # ablations in Section 4
         "gold_w_template", "random_w_template", # ablations in Section 4
-        "ood_inputs", "random_english_words", "random_labels_only", "no_labels" # Section 5
+        "ood_inputs", "random_english_words", "random_labels_only", "no_labels", # Section 5
+        "random_english_words_gold_labels", "permutated_labels", "random_true_distribution"
     ]
     if args.variant in ["gold_w_template", "random_w_template"]:
         assert args.method is not None, "Please specify `--method` with the inference method (`direct` or `channel`) for using the template."
@@ -40,7 +41,7 @@ def main(args):
                 random_text_lens.append(len(line.split()))
             random_text_lens = np.array(random_text_lens)
 
-    elif args.variant=="random_english_words":
+    elif args.variant in ["random_english_words", "random_english_words_gold_labels"]:
         from english_words import english_words_set
         english_words_set = sorted(english_words_set)
 
@@ -62,19 +63,32 @@ def main(args):
 
         # in case of random English words, we will create a config file and data directory
         # for each random seed later on (since the data is different across seeds)
-        if args.variant!="random_english_words":
+        if args.variant in ["random_english_words", "random_english_words_gold_labels"]:
             with open(os.path.join(config_file, "{}.json".format(new_dataset)), "w") as f:
                 json.dump(config, f)
 
             new_dataset_dir = os.path.join(args.data_dir, new_dataset)
             if not os.path.exists(new_dataset_dir):
                 os.mkdir(new_dataset_dir)
+        
+        # load full training data to get the distribution of the labels
+        if args.variant=="random_true_distribution":
+            full_train_data_path = os.path.join(args.data_dir, dataset, "{}_16384_100_train.jsonl".format(dataset))
+            assert os.path.exists(full_train_data_path), "Please generate full training data first by running _build_gym.py with k=16384."
+            full_train_data_labels = []
+            with open(full_train_data_path, "r") as f:
+                for line in f:
+                    dp = json.loads(line)
+                    assert dp["task"]==dataset
+                    full_train_data_labels.append(dp["output"])
+            train_label_counter = Counter(full_train_data_labels)
+            train_label_distribution = {label : train_label_counter[label] / len(full_train_data_labels) for label in train_label_counter}
 
         for seed in seeds:
             # random seed
             np.random.seed(int(seed))
 
-            if args.variant=="random_english_words":
+            if args.variant in ["random_english_words", "random_english_words_gold_labels"]:
                 new_dataset = new_datasets[dataset_idx] + "_seed={}".format(seed)
 
             # read the original training and test data
@@ -107,7 +121,7 @@ def main(args):
                     apply_template(dp, dataset, args.method)
 
             # now, for random_english_words, create a config file and data directory
-            if args.variant=="random_english_words":
+            if args.variant in ["random_english_words", "random_english_words_gold_labels"]:
                 new_dataset_dir = os.path.join(args.data_dir, new_dataset)
                 if not os.path.exists(new_dataset_dir):
                     os.mkdir(new_dataset_dir)
@@ -125,6 +139,11 @@ def main(args):
                         train_data[i]["output"] = new_mapping[dp["output"]]
                         train_data[i]["options"] = [new_mapping[option] for option in dp["options"]]
 
+                    # also modify the test data for classification tasks
+                    for i, dp in enumerate(test_data):
+                        test_data[i]["output"] = new_mapping[dp["output"]]
+                        test_data[i]["options"] = [new_mapping[option] for option in dp["options"]]
+
                 elif config["task_type"]=="multi-choice":
                     with open(os.path.join(config_file, "{}.json".format(new_dataset)), "w") as f:
                         json.dump(config, f)
@@ -141,6 +160,18 @@ def main(args):
                 else:
                     raise NotImplementedError()
 
+            # modify both train input and test input for permutated_labels with classification tasks
+            if args.variant == "permutated_labels" and config["task_type"]=="classification":
+                old_options = config["options"]
+                new_options = [old_options[(i+1)%len(old_options)] for i in range(len(old_options))]
+                new_mapping = {old_option: new_option for old_option, new_option in zip(old_options, new_options)}
+
+                for i, dp in enumerate(train_data):
+                    train_data[i]["output"] = new_mapping[dp["output"]]                    
+                for i, dp in enumerate(test_data):
+                    test_data[i]["output"] = new_mapping[dp["output"]]
+                    
+
             ## modify labels in the training data
 
             if args.variant in ["75_correct", "50_correct", "25_correct"]:
@@ -148,7 +179,7 @@ def main(args):
                 indices_correct = np.random.permutation(range(args.k))[:num_correct]
 
             for dp_idx, dp in enumerate(train_data):
-                if args.variant in ["gold", "gold_w_template"] or \
+                if args.variant in ["gold", "gold_w_template", "permutated_labels", "random_english_words_gold_labels"] or \
                         (args.variant in ["75_correct", "50_correct", "25_correct"] and dp_idx in indices_correct):
                     # assign correct label
                     pass
@@ -159,9 +190,12 @@ def main(args):
                     # assign empty label
                     dp["output"] = ""
                     dp["options"] = [""]
+                elif args.variant=="random_true_distribution":
+                    # assign random labels according to the distribution in the training data
+                    dp["output"] = np.random.choice(list(train_label_distribution.keys()), p=list(train_label_distribution.values()))
                 else:
                     # assign random label
-                    dp["output"] = dp["options"][np.random.choice(range(len(dp["options"])))]
+                    dp["output"] = np.random.choice(dp["options"])
 
             ## modify inputs in the training data
 

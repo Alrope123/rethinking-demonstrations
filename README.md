@@ -19,6 +19,7 @@ If you find our code or paper useful, please cite the paper:
 ```
 
 ### Announcements
+* 07/25/2022: The code also supports running GPT-3 now.
 * 02/25/2022: The code supports running GPT-2, MetaICL and GPT-J for now. Please contact authors for running other models.
 
 ## Content
@@ -37,7 +38,6 @@ If you find our code or paper useful, please cite the paper:
     * [Demonstrations with random english words](#demonstrations-with-random-english-words)
     * [Demonstrations with random labels only (no inputs)](#demonstrations-with-random-labels-only-no-inputs)
     * [Demonstrations with no labels (inputs only)](#demonstrations-with-no-labels-inputs-only)
-
 
 ## Preparation
 
@@ -77,6 +77,11 @@ pip install torch==1.9.0
 pip install git+https://github.com/huggingface/transformers.git@c37573806ab3526dd805c49cbe2489ad4d68a9d7
 ```
 
+(Optional) Install OpenAI Python Library for running GPT-3
+```
+pip install openai
+```
+
 ## Reproducing Main Experiments
 
 This is for reproducing experiments in Section 4.1 of the paper.
@@ -101,12 +106,19 @@ python test.py --dataset {dataset} --gpt2 channel-metaicl --method channel --out
 python test.py --dataset {dataset} --gpt2 gpt-j-6B --method direct --out_dir out/gpt-j --do_zeroshot
 # Channel GPT-J
 python test.py --dataset {dataset} --gpt2 gpt-j-6B --method channel --out_dir out/gpt-j --do_zeroshot
+# GPT-3
+python test_gpt3.py --dataset {dataset} --gpt3 {ada|babbage|curie|davinci} --method {direct|channel} --out_dir out/gpt3 --do_zeroshot --api {API key}
 ```
-Note that `test.py` does not support multi-gpu for inference.
+Note that `test.py` and `test_gpt3.py` does not support multi-gpu for inference.
 
 Other useful flags:
 * `--test_batch_size`: can be adjusted based on your GPU memory availability. With a 32GB GPU, you can use 64 for GPT-2 Large & MetaICL, and 16 for GPT-J **with no demonstrations**. Later, when you run the code **with demonstrations**, decreasing the batch size by 4 times typically works, e.g., 16 (GPT-2 Large & MetaICL) and 4 (GPT-J) with a 32GB GPU.
 * `--log_file`: if you want to save logs in a file, you can specify the path to the log file.
+
+Notes for running GPT-3:
+* You can create/check your OpenAI API keys by visiting [this link](https://beta.openai.com/account/api-keys).
+* Running with GPT-3 can be expensive, and different models of GPT-3 comes with different costs. Please check [this link](https://openai.com/api/pricing/) to evaluate the cost before running each experiment.
+* The responses from the GPT-3 API are cached in the `out_dir`.
 
 From now on, we will use the above commands as a default and tell you which flags you need to add.
 
@@ -210,4 +222,3 @@ Then, run the commands same as [default commands](#no-demonstrations) but add `-
 [luke]: https://www.cs.washington.edu/people/faculty/lsz
 
 [metaicl]: https://github.com/facebookresearch/MetaICL
-
