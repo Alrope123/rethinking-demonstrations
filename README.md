@@ -10,10 +10,10 @@ Please leave issues for any questions about the paper or the code.
 
 If you find our code or paper useful, please cite the paper:
 ```
-@article{ min2022rethinking,
+@inproceedings{ min2022rethinking,
     title={ Rethinking the Role of Demonstrations: What makes In-context Learning Work? },
     author={ Min, Sewon and Lyu, Xinxi and Holtzman, Ari and Artetxe, Mikel and Lewis, Mike and Hajishirzi, Hannaneh and Zettlemoyer, Luke },
-    journal={ arXiv preprint },
+    booktitle={ EMNLP },
     year={ 2022 }
 }
 ```
