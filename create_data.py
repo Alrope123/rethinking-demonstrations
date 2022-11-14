@@ -139,10 +139,11 @@ def main(args):
                         train_data[i]["output"] = new_mapping[dp["output"]]
                         train_data[i]["options"] = [new_mapping[option] for option in dp["options"]]
 
-                    # also modify the test data for classification tasks
-                    for i, dp in enumerate(test_data):
-                        test_data[i]["output"] = new_mapping[dp["output"]]
-                        test_data[i]["options"] = [new_mapping[option] for option in dp["options"]]
+                    if args.variant == "random_english_words_gold_labels":
+                        # also modify the test data for classification tasks
+                        for i, dp in enumerate(test_data):
+                            test_data[i]["output"] = new_mapping[dp["output"]]
+                            test_data[i]["options"] = [new_mapping[option] for option in dp["options"]]
 
                 elif config["task_type"]=="multi-choice":
                     with open(os.path.join(config_file, "{}.json".format(new_dataset)), "w") as f:
