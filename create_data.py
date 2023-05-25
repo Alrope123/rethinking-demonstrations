@@ -63,7 +63,7 @@ def main(args):
 
         # in case of random English words, we will create a config file and data directory
         # for each random seed later on (since the data is different across seeds)
-        if args.variant in ["random_english_words", "random_english_words_gold_labels"]:
+        if args.variant not in ["random_english_words", "random_english_words_gold_labels"]:
             with open(os.path.join(config_file, "{}.json".format(new_dataset)), "w") as f:
                 json.dump(config, f)
 
