@@ -46,7 +46,7 @@ The code is tested with python 3.8.
 The data and the code are based on the MetaICL codebase.
 ```bash
 git remote add metaicl https://github.com/facebookresearch/MetaICL.git
-git pull metaicl main
+git pull metaicl main --allow-unrelated-histories -X ours
 ```
 
 Install the data dependencies and download the data.
